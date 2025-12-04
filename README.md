@@ -29,7 +29,7 @@ Three datasets with 89,893 professor records each:
 ## Setup
 ```bash
 pip install -r requirements.txt
-python src/analysis.py
+python src/preprocessing.py
 ```
 
 ## Preprocessing
