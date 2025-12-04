@@ -34,12 +34,18 @@ def load_and_preprocess():
     # --------- 5. Handle missing values ---------
     # numerical
     df["online_count"] = df["online_count"].fillna(0)
+    # take care of missing `will_take_pct`
+    df["will_retake_pct"] = df["will_retake_pct"].fillna(df["will_retake_pct"].median())
 
     # qualitative
     df["major"] = df["major"].fillna("Unknown")
     df["university"] = df["university"].fillna("Unknown")
     df["state"] = df["state"].fillna("Unknown")
-
+    
+    # handling gender (qualitative)
+    df['gender'] = 'unclear'  
+    df.loc[(df['male'] == 1) & (df['female'] == 0), 'gender'] = 'male'   # overwrite male cases
+    df.loc[(df['male'] == 0) & (df['female'] == 1), 'gender'] = 'female'  # overwrite female cases
     # rating & difficulty already removed through rating_count filter
 
     # --------- 6. Normalize tags ---------
