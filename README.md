@@ -97,7 +97,8 @@ We apply minimal, principled imputations based on the semantics of each feature.
 
 **Numerical**
 ```
-online_count → fill with 0   (no online ratings)
+online_count → fill missing values with 0   (no online ratings)
+will_retake_pct → fill missing values with median
 ```
 
 **Qualitative**
@@ -109,11 +110,11 @@ major / university / state → fill with "Unknown"
 
 Not imputed; missing entries are eliminated earlier by the rating_count filter.
 
+
+
 **Gender (male/female)**
 
-Left as-is:
-```NaN = unknown gender```
-This is necessary to avoid incorrectly labeling unknown professors.
+Created new column ```gender``` with classes ```female``` and ```male``` to denote rows exclusively with ```male == 1``` or ```female == 1```.
 
 ### 5. Normalizing Tag Counts
 
