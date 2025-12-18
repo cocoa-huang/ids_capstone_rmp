@@ -1,7 +1,19 @@
-## Preprocessing
+## %% Preprocessing
 
 import pandas as pd
 import numpy as np
+import pandas as pd
+from scipy.stats import ttest_ind
+import seaborn as sns
+import matplotlib.pyplot as plt
+from scipy.stats import levene
+import numpy as np
+import random
+
+
+SEED = 11269807   # Bruce's N-number
+np.random.seed(SEED)
+random.seed(SEED)
 
 def load_and_preprocess():
 
@@ -94,50 +106,13 @@ Authors: Eric Huang, Bruce Zhang
 
 # -*- coding: utf-8 -*-
 # %%
-import pandas as pd
-from scipy.stats import ttest_ind
-import seaborn as sns
-import matplotlib.pyplot as plt
-from scipy.stats import levene
-import numpy as np
-import random
 
-
-SEED = 11269807   # Bruce's N-number
-np.random.seed(SEED)
-random.seed(SEED)
-# Load processed dataset
+# Load processed dataseta
 df = pd.read_csv("../data/rmpCapstoneProcessed.csv")
 
 print("Loaded df shape:", df.shape)
 print(df.columns)
 
-
-
-# %%
-def get_gender_df(df):
-    """
-    Return a filtered dataframe where gender is clearly identified
-    as 'male' or 'female'. Rows labeled 'unclear' are removed.
-    """
-    df_clean = df[df["gender"].isin(["male", "female"])].copy()
-    return df_clean
-
-
-
-def plot_q1_distribution(df):
-    df_gender = df[df["gender"].isin(["male", "female"])]
-
-    plt.figure(figsize=(8,5))
-    sns.histplot(data=df_gender, x="rating", hue="gender",
-                 bins=20, alpha=0.4, stat="count",
-                 palette={"female": "#1f77b4", "male": "#ff7f0e"})
-    plt.title("Rating Histogram by Gender")
-    plt.xlabel("Rating")
-    plt.ylabel("Count")
-    plt.tight_layout()
-    plt.show()
-    
 
 
 
@@ -146,10 +121,9 @@ def plot_q1_distribution(df):
 # Question 1 - Gender Bias in Averaged Ratings
 
 
-df_gender = get_gender_df(df)
 
-male_ratings = df_gender[df_gender["gender"] == "male"]["rating"]
-female_ratings = df_gender[df_gender["gender"] == "female"]["rating"]
+male_ratings = df[df["gender"] == "male"]["rating"]
+female_ratings = df[df["gender"] == "female"]["rating"]
 
 print("Sample sizes:")
 print("Male:", len(male_ratings))
@@ -167,8 +141,32 @@ print("Male mean:", male_ratings.mean())
 print("Female mean:", female_ratings.mean())
 
 
-plot_q1_distribution(df_gender)
 
+plt.figure(figsize=(8, 5))
+
+plt.hist(
+    df[df["gender"] == "male"]["rating"],
+    bins=20,
+    alpha=0.6,
+    density=True,
+    label="male"
+)
+
+plt.hist(
+    df[df["gender"] == "female"]["rating"],
+    bins=20,
+    alpha=0.6,
+    density=True,
+    label="female"
+)
+
+plt.xlabel("Rating")
+plt.ylabel("Density")
+plt.title("Rating Distribution by Gender")
+plt.legend()
+plt.tight_layout()
+plt.savefig("../figures/Q1_comparison.png", dpi=300)
+plt.show()
 
 # %%
 # Question 2 - Gender variance difference (spread/dispersion)
@@ -258,11 +256,47 @@ print(f"95% CI for variance ratio: [{vr_lower}, {vr_upper}]")
 
 
 
+# Values from your bootstrap
+effects = ["Mean difference (Cohen's d)", "Spread difference (Variance ratio)"]
+point_estimates = [d, var_ratio]
+ci_lowers = [d_lower, vr_lower]
+ci_uppers = [d_upper, vr_upper]
+
+# Reference lines (no effect)
+ref_lines = [0, 1]
+
+fig, ax = plt.subplots(figsize=(7, 3.5))
+
+y_pos = [1, 0]  # vertical positions
+
+# Plot point estimates with CI
+for i in range(2):
+    ax.errorbar(
+        x=point_estimates[i],
+        y=y_pos[i],
+        xerr=[[point_estimates[i] - ci_lowers[i]],
+              [ci_uppers[i] - point_estimates[i]]],
+        fmt='o',
+        capsize=6,
+        markersize=7,
+        linewidth=2
+    )
+    ax.axvline(ref_lines[i], linestyle='--', color='gray', alpha=0.6)
+
+# Formatting
+ax.set_yticks(y_pos)
+ax.set_yticklabels(effects)
+ax.set_xlabel("Effect size (with 95% CI)")
+ax.set_title("Estimated Gender Effects with 95% Confidence Intervals")
+
+plt.tight_layout()
+plt.savefig("../figures/Q3_effect_sizes.png", dpi=300)
+plt.show()
+
 # %%
 # Question 4 — Gender differences in tags
 
 
-df_gender = get_gender_df(df)
 
 tag_cols = [
     "tough_grader", "good_feedback", "respected", "lots_to_read",
@@ -280,8 +314,8 @@ results = []
 for tag in tag_cols:
     col = tag + "_norm"
 
-    male_vals = df_gender[df_gender["gender"] == "male"][col]
-    female_vals = df_gender[df_gender["gender"] == "female"][col]
+    male_vals = df[df["gender"] == "male"][col]
+    female_vals = df[df["gender"] == "female"][col]
 
     stat, p_val = mannwhitneyu(male_vals, female_vals, alternative="two-sided")
 
