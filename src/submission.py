@@ -336,6 +336,48 @@ print(tag_results.head(5))
 print("\n=== Top 5 least gendered tags (largest p-values) ===")
 print(tag_results.tail(5))
 
+
+
+
+top5 = tag_results.head(5)
+
+plt.figure(figsize=(8, 5))
+plt.barh(
+    top5["tag"],
+    -np.log10(top5["p_value"]),
+    color="tab:red",
+    alpha=0.8
+)
+
+plt.xlabel(r"$-\log_{10}(p\mathrm{-value})$")
+plt.title("Most Gendered Teaching Tags")
+plt.gca().invert_yaxis()  
+plt.tight_layout()
+
+plt.savefig("../figures/Q4_most_gendered_tags.png", dpi=300)
+plt.show()
+
+
+bottom5 = tag_results.tail(5)
+
+plt.figure(figsize=(8, 5))
+plt.barh(
+    bottom5["tag"],
+    -np.log10(bottom5["p_value"]),
+    color="tab:blue",
+    alpha=0.8
+)
+
+plt.xlabel(r"$-\log_{10}(p\mathrm{-value})$")
+plt.title("Least Gendered Teaching Tags")
+plt.gca().invert_yaxis()
+plt.tight_layout()
+
+plt.savefig("../figures/Q4_least_gendered_tags.png", dpi=300)
+plt.show()
+
+
+
 # %% 
 # Question 5
 
@@ -377,6 +419,47 @@ d_upper  = np.percentile(d_samples, 97.5)
 print(f"95% CI for d: [{d_lower:.4f}, {d_upper:.4f}]")
 
 
+
+
+
+plt.figure(figsize=(7, 4))
+
+sns.violinplot(
+    data=df[df["gender"].isin(["male", "female"])],
+    x="gender",
+    y="difficulty",
+    inner="box",
+    cut=0
+)
+
+plt.xlabel("Gender")
+plt.ylabel("Difficulty Rating")
+plt.title("Distribution of Difficulty Ratings by Gender")
+plt.tight_layout()
+plt.savefig("../figures/Q5_difficulty_distribution.png", dpi=300)
+plt.show()
+
+
+
+plt.figure(figsize=(6, 2.5))
+
+plt.errorbar(
+    x=d,
+    y=0,
+    xerr=[[d - d_lower], [d_upper - d]],
+    fmt="o",
+    capsize=5
+)
+
+plt.axvline(0, linestyle="--", color="gray")
+plt.yticks([])
+plt.xlabel("Cohen's d (95% CI)")
+plt.title("Effect Size of Gender Difference in Difficulty")
+plt.tight_layout()
+plt.savefig("../figures/Q6_difficulty_effect_size.png", dpi=300)
+plt.show()
+
+# %%
 """
 Questions 7-10: Modeling
 Authors: Eric Huang, Bruce Zhang
@@ -404,7 +487,7 @@ df = pd.read_csv("../data/rmpCapstoneProcessed.csv")
 
 
 run_q7 = False
-run_q8 = False
+run_q8 = True
 run_q9 = False
 run_q10 = False
 
